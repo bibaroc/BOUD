@@ -1,0 +1,31 @@
+
+version: "3"
+services:
+
+  dev:
+    build: 
+      context: ./
+
+    image: node_dev_server
+
+    ports:
+      - 8080:7070
+
+    volumes:
+      - .:/home/node/project
+
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 3
+        window: 120s
+
+    networks:
+      - development
+#--legacy-watch necessary, cuz fuck you docker on windows doesnt propagate host filesystem changes
+    command: nodemon --legacy-watch dev.js
+
+networks: 
+  development: 
+    driver: bridge

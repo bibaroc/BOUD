@@ -1,0 +1,12 @@
+{
+  "name": "boud",
+  "version": "0.0.1",
+  "description": "A simple express router built to have no dependency",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node dev.js"
+  },
+  "author": "Vladyslav Sulimovskyy",
+  "license": "MIT"
+}
