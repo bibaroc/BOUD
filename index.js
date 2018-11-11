@@ -1,5 +1,6 @@
 const http = require("http");
 const HandlerBuilder = require("./src/HandlerBuilder")
+const execServer = require("./src/utils/execServer");
 
 class Boud {
 
@@ -8,22 +9,7 @@ class Boud {
         this.__middlewares = [];
         this.__handlers = [];
     }
-
-    get registeredPaths() {
-        let cumulativePaths = {};
-
-        cumulativePaths["middlewares"] = this.__middlewares;
-
-        cumulativePaths["handlers"] = this.__handlers;
-
-        cumulativePaths["slaveRouters"] = this.__slaves;
-
-        return cumulativePaths;
-    }
-
-    set registeredPaths(p) { };
-
-
+    
     onConnect(url, callback) {
 
         this.__handlers.push(HandlerBuilder.makeHandler("CONNECT", url, callback));
@@ -92,81 +78,16 @@ class Boud {
 
     }
 
-    exec() {
-
-        let result;
-
-        let paths = this.registeredPaths;
-
-        for (let middleware of paths.middlewares) {
-
-            if (result = middleware.exec(request)) {
-                return result;
-            }
-
-        }
-
-        for (let handler of paths.handlers) {
-
-            if (result = handler.exec(request)) {
-
-                return result;
-            }
-        }
-
-        for (let router of paths.slaveRouters) {
-
-            if (result = router.exec(request)) {
-
-                return result;
-
-            }
-        }
-
-        return null;
-
-    }
-
     startServer(port = process.env.PORT || 8080) {
-        let result;
+
         http.createServer((request, response) => {
 
-            let paths = this.registeredPaths;
+            let result = execServer(this, request, response);
 
-            for (let middleware of paths.middlewares) {
-
-                if (result = middleware.exec(request)) {
-
-                    console.log(`un middlware ha matchato ${request.url}`);
-
-                    //TODO: send the actual response
-                }
-
-            }
-
-            for (let handler of paths.handlers) {
-
-                if (result = handler.exec(request)) {
-
-                    console.log(`un middlware ha matchato ${request.url}`);
-
-                    //TODO: send the actual response
-                }
-            }
-
-            for (let router of paths.slaveRouters) {
-
-                if (result = router.exec(request)) {
-
-                    console.log(`un middlware ha matchato ${request.url}`);
-
-                    //TODO: send the actual response
-                }
-            }
-
-
-
+            console.log(result);
+            
         }).listen(port);
+
     }
 
 

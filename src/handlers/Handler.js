@@ -12,7 +12,7 @@ class Handler {
     exec(request, response) {
         let result = null;
         this._methodStrat(request) && this._urlStrat(request, this._test) && (result = this._callback(request, response));
-        return result;
+        return (result || null);
     };
 
 
