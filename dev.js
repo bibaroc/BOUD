@@ -1,4 +1,4 @@
-let router = require("./src/router");
+let router = require("./index.js");
 
 let r = new router();
 r.onConnect("/", () => { return "ciao" })
