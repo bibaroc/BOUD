@@ -85,9 +85,9 @@ class Boud {
 
             let result = execServer(this, request, new Response());
 
-
             response.setHeader("X-Powered-By", "BOUD github.com/bibaroc/BOUD");
 
+            console.log(result);
 
             if (result) {
 
@@ -104,7 +104,6 @@ class Boud {
         }).listen(port);
 
     }
-
 
 }
 

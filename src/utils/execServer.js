@@ -1,7 +1,7 @@
 const getRegisteredPaths = require("./getRoutersRegisteredPaths");
 
 
-function execServer (server, request, response) {
+function execServer(server, request, response) {
 
     let result;
 

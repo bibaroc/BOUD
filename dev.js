@@ -2,9 +2,12 @@ let router = require("./index");
 
 let r = new router();
 
-r.registerMiddleware((request, response)=>{});
+r.registerMiddleware(()=>{console.log("il middleware dovrebbe proccare")});
+
 r.onGet("/", function(request, response){
-    return "ciao io sono la risposta"+Date.now();
-})
+  
+    return response.send("ciao");
+
+});
 
 r.startServer(7070);

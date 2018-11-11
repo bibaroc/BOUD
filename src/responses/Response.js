@@ -1,3 +1,6 @@
+const serializeJSON = require("./../serializers/serializeJSON");
+const setHeaders = require("./../utils/setResponseHeaders");
+
 class Response {
 
     constructor() {
@@ -8,24 +11,24 @@ class Response {
 
     send(content, status = 200) {
 
-        this.__status = status;
-
         this.setHeader("Content-Type", "text/plain");
 
-        
-        
-        this.setHeader("Content-Length", Buffer.byteLength(this.__body));
+        this.__body = content;
+
+        setHeaders(this, status);
+
+        return this;
     };
 
     sendJson(content, status = 200) {
 
-        this.__status = status;
-        
         this.setHeader("Content-Type", "application/json");
 
+        this.__body = serializeJSON(content);
 
-        
-        this.setHeader("Content-Length", Buffer.byteLength(this.__body));
+        setHeaders(this, status);
+
+        return this;
     };
 
     setHeader(headerKey, headerValue) {
