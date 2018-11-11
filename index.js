@@ -3,36 +3,20 @@ const HandlerBuilder = require("./src/HandlerBuilder")
 
 class Boud {
 
-    constructor(middlewareFunction = null) {
-        this.__slave = null;
-        this.__middleware = middlewareFunction;
-        this.__handlersRegisteredBeforeMiddleware = [];
-        this.__handlersRegisteredAfterMiddleware = [];
+    constructor() {
+        this.__slaves = [];
+        this.__middlewares = [];
+        this.__handlers = [];
     }
 
     get registeredPaths() {
-        let cumulativePaths = [];
+        let cumulativePaths = {};
 
-        for (let handler of this.__handlersRegisteredBeforeMiddleware) {
-            cumulativePaths.push(handler);
-        }
+        cumulativePaths["middlewares"] = this.__middlewares;
 
-        if (this.__middleware) {
+        cumulativePaths["handlers"] = this.__handlers;
 
-            cumulativePaths.push(this.__middleware);
-
-            for (let handler of this.__handlersRegisteredAfterMiddleware) {
-                cumulativePaths.push(handler);
-            }
-
-            if (this.__slave) {
-
-                for (let slavesHandler of this.__slave.registeredPaths) {
-                    cumulativePaths.push(slavesHandler);
-                }
-
-            }
-        }
+        cumulativePaths["slaveRouters"] = this.__slaves;
 
         return cumulativePaths;
     }
@@ -41,117 +25,145 @@ class Boud {
 
 
     onConnect(url, callback) {
-        if (this.__slave) {
-            this.__slave.onConnect(url, callback);
-        } else {
-            this.__placeHandler(HandlerBuilder.makeHandler("CONNECT", url, callback));
-        }
+
+        this.__handlers.push(HandlerBuilder.makeHandler("CONNECT", url, callback));
+
     }
 
     onDelete(url, callback) {
-        if (this.__slave) {
-            this.__slave.onDelete(url, callback);
-        } else {
-            this.__placeHandler(HandlerBuilder.makeHandler("DELETE", url, callback));
-        }
+
+        this.__handlers.push(HandlerBuilder.makeHandler("DELETE", url, callback));
+
     }
 
     onGet(url, callback) {
-        if (this.__slave) {
-            this.__slave.onGet(url, callback);
-        } else {
-            this.__placeHandler(HandlerBuilder.makeHandler("GET", url, callback));
-        }
+
+        this.__handlers.push(HandlerBuilder.makeHandler("GET", url, callback));
 
     }
 
     onHead(url, callback) {
-        if (this.__slave) {
-            this.__slave.onHead(url, callback);
-        } else {
-            this.__placeHandler(HandlerBuilder.makeHandler("HEAD", url, callback));
-        }
+
+        this.__handlers.push(HandlerBuilder.makeHandler("HEAD", url, callback));
+
     }
 
     onOptions(url, callback) {
-        if (this.__slave) {
-            this.__slave.onOptions(url, callback);
-        } else {
-            this.__placeHandler(HandlerBuilder.makeHandler("OPTIONS", url, callback));
-        }
+
+        this.__handlers.push(HandlerBuilder.makeHandler("OPTIONS", url, callback));
+
     }
 
     onPatch(url, callback) {
-        if (this.__slave) {
-            this.__slave.onPatch(url, callback);
-        } else {
-            this.__placeHandler(HandlerBuilder.makeHandler("PATCH", url, callback));
-        }
+
+        this.__handlers.push(HandlerBuilder.makeHandler("PATCH", url, callback));
+
     }
 
     onPost(url, callback) {
-        if (this.__slave) {
-            this.__slave.onPost(url, callback);
-        } else {
-            this.__placeHandler(HandlerBuilder.makeHandler("POST", url, callback));
-        }
+
+        this.__handlers.push(HandlerBuilder.makeHandler("POST", url, callback));
+
     }
 
     onPut(url, callback) {
-        if (this.__slave) {
-            this.__slave.onPut(url, callback);
-        } else {
-            this.__placeHandler(HandlerBuilder.makeHandler("PUT", url, callback));
-        }
+
+        this.__handlers.push(HandlerBuilder.makeHandler("PUT", url, callback));
+
     }
 
     onTrace(url, callback) {
-        if (this.__slave) {
-            this.__slave.onTrace(url, callback);
-        } else {
-            this.__placeHandler(HandlerBuilder.makeHandler("TRACE", url, callback));
-        }
+
+        this.__handlers.push(HandlerBuilder.makeHandler("TRACE", url, callback));
+
     }
 
     onRequest(url, callback) {
-        if (this.__slave) {
-            this.__slave.onRequest(url, callback);
-        } else {
-            this.__placeHandler(HandlerBuilder.makeHandler(undefined, url, callback));
-        }
+
+        this.__handlers.push(HandlerBuilder.makeHandler(undefined, url, callback));
+
     }
 
     registerMiddleware(callback) {
+
         let middlewareFunction = HandlerBuilder.makeHandler(undefined, undefined, callback);
-        if (this.__middleware) {
-            this.slave = new Boud(middlewareFunction);
-        } else {
-            this.__middleware = middlewareFunction;
-        }
+
+        this.__middlewares.push(middlewareFunction);
 
     }
 
-    __placeHandler(handler) {
-        if (this.__middleware) {
-            this.__handlersRegisteredAfterMiddleware.push(handler);
-        } else {
-            this.__handlersRegisteredBeforeMiddleware.push(handler);
+    exec() {
+
+        let result;
+
+        let paths = this.registeredPaths;
+
+        for (let middleware of paths.middlewares) {
+
+            if (result = middleware.exec(request)) {
+                return result;
+            }
+
         }
-    };
+
+        for (let handler of paths.handlers) {
+
+            if (result = handler.exec(request)) {
+
+                return result;
+            }
+        }
+
+        for (let router of paths.slaveRouters) {
+
+            if (result = router.exec(request)) {
+
+                return result;
+
+            }
+        }
+
+        return null;
+
+    }
 
     startServer(port = process.env.PORT || 8080) {
         let result;
         http.createServer((request, response) => {
 
+            let paths = this.registeredPaths;
 
-            for (let handler of this.registeredPaths) {
+            for (let middleware of paths.middlewares) {
+
+                if (result = middleware.exec(request)) {
+
+                    console.log(`un middlware ha matchato ${request.url}`);
+
+                    //TODO: send the actual response
+                }
+
+            }
+
+            for (let handler of paths.handlers) {
 
                 if (result = handler.exec(request)) {
-                    console.log(`un handler ha matchato ${request.url}`);
 
-                    //TODO send the actual response
+                    console.log(`un middlware ha matchato ${request.url}`);
+
+                    //TODO: send the actual response
                 }
             }
+
+            for (let router of paths.slaveRouters) {
+
+                if (result = router.exec(request)) {
+
+                    console.log(`un middlware ha matchato ${request.url}`);
+
+                    //TODO: send the actual response
+                }
+            }
+
 
 
         }).listen(port);
