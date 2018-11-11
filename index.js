@@ -1,6 +1,7 @@
 const http = require("http");
-const HandlerBuilder = require("./src/HandlerBuilder")
+const HandlerBuilder = require("./src/HandlerBuilder");
 const execServer = require("./src/utils/execServer");
+const Response = require("./src/responses/Response");
 
 class Boud {
 
@@ -9,7 +10,7 @@ class Boud {
         this.__middlewares = [];
         this.__handlers = [];
     }
-    
+
     onConnect(url, callback) {
 
         this.__handlers.push(HandlerBuilder.makeHandler("CONNECT", url, callback));
@@ -82,10 +83,24 @@ class Boud {
 
         http.createServer((request, response) => {
 
-            let result = execServer(this, request, response);
+            let result = execServer(this, request, new Response());
 
-            console.log(result);
-            
+
+            response.setHeader("X-Powered-By", "BOUD github.com/bibaroc/BOUD");
+
+
+            if (result) {
+
+                response.statusCode = result.__status;
+
+                for (let header of result.__headers)
+                    response.setHeader(header.key, header.value);
+
+                response.write(result.__body);
+            }
+
+            response.end();
+
         }).listen(port);
 
     }

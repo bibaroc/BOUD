@@ -1,8 +1,8 @@
-let router = require("./index.js");
+let router = require("./index");
 
 let r = new router();
 
-r.registerMiddleware((request, response)=>{console.log("il liddleware ha fatto qualcosa alle: "+Date.now())});
+r.registerMiddleware((request, response)=>{});
 r.onGet("/", function(request, response){
     return "ciao io sono la risposta"+Date.now();
 })
