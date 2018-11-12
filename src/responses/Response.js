@@ -5,35 +5,64 @@ class Response {
 
     constructor() {
         this.__headers = [];
-        this.__body;
-        this.__status;
+        this.__body = "";
+        this.__status = 200;
+        this.__allowChanges = true;
+        this.__changesForbiddenReason = "";
     };
 
     send(content, status = 200) {
 
-        this.setHeader("Content-Type", "text/plain");
+        if (this.__allowChanges) {
 
-        this.__body = content;
+            this.setHeader("Content-Type", "text/plain");
 
-        setHeaders(this, status);
+            this.__body = content;
 
-        return this;
+            setHeaders(this, status);
+
+            return this;
+
+        }
+
+        throw new Error(`Further changes are not allowed ${this.__changesForbiddenReason}`);
+
     };
 
     sendJson(content, status = 200) {
 
-        this.setHeader("Content-Type", "application/json");
+        if (this.__allowChanges) {
 
-        this.__body = serializeJSON(content);
+            this.setHeader("Content-Type", "application/json");
 
-        setHeaders(this, status);
+            this.__body = serializeJSON(content);
 
-        return this;
+            setHeaders(this, status);
+
+            return this;
+
+        }
+
+        throw new Error(`Further changes are not allowed ${this.__changesForbiddenReason}`);
+
     };
 
     setHeader(headerKey, headerValue) {
         this.__headers.push({ key: headerKey, value: headerValue });
     };
+
+    clone() {
+
+        let clonedResponse = new Response();
+
+        
+        for (let prop of Object.getOwnPropertyNames(this))
+
+            clonedResponse[prop] = this[prop];
+
+        return clonedResponse;
+
+    }
 }
 
 module.exports = Response;

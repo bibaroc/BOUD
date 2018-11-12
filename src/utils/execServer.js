@@ -3,14 +3,15 @@ const getRegisteredPaths = require("./getRoutersRegisteredPaths");
 
 function execServer(server, request, response) {
 
-    let result;
+    let result = { middlewareMatched: false, serverResult: null },
+        serversPaths = getRegisteredPaths(server);
 
-
-    let serversPaths = getRegisteredPaths(server);
 
     for (let middleware of serversPaths.middlewares) {
 
-        if (result = middleware.exec(request, response)) {
+        if (result.serverResult = middleware.exec(request, response)) {
+
+            result.middlewareMatched = true;
 
             return result;
 
@@ -20,23 +21,31 @@ function execServer(server, request, response) {
 
     for (let handler of serversPaths.handlers) {
 
-        if (result = handler.exec(request, response)) {
+        if (result.serverResult = handler.exec(request, response)) {
 
             return result;
 
         }
     }
+
+
+    let buffer, firstMiddlewareToMatch;
 
     for (let router of serversPaths.slaveRouters) {
 
-        if (result = execServer(router, request, response)) {
+        if (buffer = execServer(router, request, response.clone())) {
 
-            return result;
+            if (!buffer.middlewareMatched && buffer.serverResult)
+                return buffer;
+            else if (buffer.middlewareMatched && !firstMiddlewareToMatch) {
+                firstMiddlewareToMatch = buffer;
+            }
 
         }
+        
     }
 
-    return null;
+    return { middlewareMatched: false, serverResult: null };
 }
 
 module.exports = execServer;

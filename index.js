@@ -79,24 +79,37 @@ class Boud {
 
     }
 
+    registerServer(server) {
+        this.__slaves.push(server);
+    }
+
     startServer(port = process.env.PORT || 8080) {
 
         http.createServer((request, response) => {
 
-            let result = execServer(this, request, new Response());
-
             response.setHeader("X-Powered-By", "BOUD github.com/bibaroc/BOUD");
 
-            console.log(result);
+            try {
 
-            if (result) {
+                let result = execServer(this, request, new Response()).serverResult;
 
-                response.statusCode = result.__status;
+                if (result) {
 
-                for (let header of result.__headers)
-                    response.setHeader(header.key, header.value);
+                    response.statusCode = result.__status;
 
-                response.write(result.__body);
+                    for (let header of result.__headers)
+                        response.setHeader(header.key, header.value);
+
+                    response.write(result.__body);
+                }
+
+            } catch (e) {
+
+                response.setHeader("Content-Type", "text/plain");
+                response.statusCode = 500;
+                response.write("Internal server error");
+
+                console.error(e);
             }
 
             response.end();

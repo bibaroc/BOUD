@@ -10,6 +10,7 @@ class Handler {
     };
 
     exec(request, response) {
+        //if(!this._callback) console.log(this);
         let result = null;
         this._methodStrat(request) && this._urlStrat(request, this._test) && (result = this._callback(request, response));
         return result;
