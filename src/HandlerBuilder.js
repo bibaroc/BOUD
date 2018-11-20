@@ -17,9 +17,9 @@ const defaultMethodStrat = require("./handlers/methodHandlingStrategies/AnyMetho
 const urlStrats = {
     "object": require("./handlers/urlHandlingStrategies/RegexStrategy"),
     "string": require("./handlers/urlHandlingStrategies/StringStrategy")
-}
+};
 
-const defaultURLStrat = require("./handlers/urlHandlingStrategies/AnyStrategy")
+const defaultURLStrat = require("./handlers/urlHandlingStrategies/AnyStrategy");
 
 
 class HandlerBuilder {
@@ -35,7 +35,6 @@ class HandlerBuilder {
             methodStrat = defaultMethodStrat;
 
         let locationStrat;
-
         if (Object.keys(urlStrats).includes(typeof url))
             locationStrat = urlStrats[typeof url]
         else
