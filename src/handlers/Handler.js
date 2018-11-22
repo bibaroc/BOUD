@@ -7,9 +7,9 @@ class Handler {
         this._callback = callback;
     }
 
-    exec(request, response) {
+    exec(basePath, request, response) {
         let result = null;
-        this._methodStrat(request) && this._urlStrat(request, this._test) && (result = this._callback(request, response));
+        this._methodStrat(request) && this._urlStrat(request, basePath.concat(this._test)) && (result = this._callback(request, response));
         return result;
     }
 

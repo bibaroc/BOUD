@@ -9,6 +9,11 @@ class Boud {
         this.__slaves = [];
         this.__middlewares = [];
         this.__handlers = [];
+        this.__basePath = "";
+    }
+
+    setBasePath(path){
+        this.__basePath = path;
     }
 
     onConnect(url, callback) {
@@ -66,7 +71,7 @@ class Boud {
 
             try {
 
-                let result = execServer(this, request, new Response()).serverResult;
+                let result = execServer(this, request, new Response(), this.__basePath).serverResult;
                 if (result) {
 
                     response.statusCode = result.__status;
